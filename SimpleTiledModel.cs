@@ -20,16 +20,21 @@ class SimpleTiledModel : Model
     int tilesize;
     bool black;
 
+    //width and height of samples.xml is the output dimensions
     public SimpleTiledModel(string name, string subsetName, int width, int height, bool periodic, bool black) : base(width, height)
     {
         this.periodic = periodic;
         this.black = black;
 
+        //loading tileset specific data
         XElement xroot = XDocument.Load($"samples/{name}/data.xml").Root;
+
+        //Neither "size" or "unique" are ever referenced in the example samples.xml
         tilesize = xroot.Get("size", 16);
         bool unique = xroot.Get("unique", false);
 
         List<string> subset = null;
+        //if subsetName != null
         if (subsetName != default(string))
         {
             XElement xsubset = xroot.Element("subsets").Elements("subset").FirstOrDefault(x => x.Get<string>("name") == subsetName);
@@ -37,14 +42,21 @@ class SimpleTiledModel : Model
             else subset = xsubset.Elements("tile").Select(x => x.Get<string>("name")).ToList();
         }
 
+        //last element of the Function type is the return type
+        //Manipulates array of colors based on input function.
         Color[] tile(Func<int, int, Color> f)
         {
             Color[] result = new Color[tilesize * tilesize];
+
+            //iterate through array (in a crazy way!)
             for (int y = 0; y < tilesize; y++) for (int x = 0; x < tilesize; x++) result[x + y * tilesize] = f(x, y);
             return result;
         };
 
+        //My new programming language: FILTH
+        //Uses the Tile function and an anonymous function to rotate the array
         Color[] rotate(Color[] array) => tile((x, y) => array[tilesize - 1 - y + x * tilesize]);
+
 
         tiles = new List<Color[]>();
         tilenames = new List<string>();
@@ -56,12 +68,15 @@ class SimpleTiledModel : Model
         foreach (XElement xtile in xroot.Element("tiles").Elements("tile"))
         {
             string tilename = xtile.Get<string>("name");
+
+            //go to next iteration of the loop
+            //skips tiles that are NOT in the subset IF we have a subset defined.
             if (subset != null && !subset.Contains(tilename)) continue;
 
             Func<int, int> a, b;
             int cardinality;
 
-            char sym = xtile.Get("symmetry", 'X');
+            char sym = xtile.Get("symmetry", 'X'); //such a clever boy
             if (sym == 'L')
             {
                 cardinality = 4;
@@ -86,7 +101,7 @@ class SimpleTiledModel : Model
                 a = i => 1 - i;
                 b = i => 1 - i;
             }
-            else
+            else //cardinality of X
             {
                 cardinality = 1;
                 a = i => i;
@@ -117,6 +132,7 @@ class SimpleTiledModel : Model
 
             if (unique)
             {
+                //Loads image rotations
                 for (int t = 0; t < cardinality; t++)
                 {
                     Bitmap bitmap = new Bitmap($"samples/{name}/{tilename} {t}.png");
@@ -126,6 +142,7 @@ class SimpleTiledModel : Model
             }
             else
             {
+                //Rotates image programatically.
                 Bitmap bitmap = new Bitmap($"samples/{name}/{tilename}.png");
                 tiles.Add(tile((x, y) => bitmap.GetPixel(x, y)));
                 tilenames.Add($"{tilename} 0");
@@ -136,6 +153,7 @@ class SimpleTiledModel : Model
                     tilenames.Add($"{tilename} {t}");
                 }
             }
+
 
             for (int t = 0; t < cardinality; t++) tempStationary.Add(xtile.Get("weight", 1.0f));
         }

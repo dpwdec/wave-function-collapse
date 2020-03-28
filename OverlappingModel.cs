@@ -29,24 +29,28 @@ class OverlappingModel : Model
         byte[,] sample = new byte[SMX, SMY];
         colors = new List<Color>();
 
+        //Make reference between list of unique colors in source image
+        //and pixel locations.
         for (int y = 0; y < SMY; y++) for (int x = 0; x < SMX; x++)
+        {
+            Color color = bitmap.GetPixel(x, y);
+
+            int i = 0;
+            foreach (var c in colors)
             {
-                Color color = bitmap.GetPixel(x, y);
-
-                int i = 0;
-                foreach (var c in colors)
-                {
-                    if (c == color) break;
-                    i++;
-                }
-
-                if (i == colors.Count) colors.Add(color);
-                sample[x, y] = (byte)i;
+                if (c == color) break;
+                i++;
             }
+
+            if (i == colors.Count) colors.Add(color);
+            sample[x, y] = (byte)i;
+        }
+
 
         int C = colors.Count;
         long W = C.ToPower(N * N);
 
+        //basically tilesize
         byte[] pattern(Func<int, int, byte> f)
         {
             byte[] result = new byte[N * N];

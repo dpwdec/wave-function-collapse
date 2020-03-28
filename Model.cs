@@ -38,15 +38,20 @@ abstract class Model
 
     void Init()
     {
+
+        //wave => bool array matching the size of the output
         wave = new bool[FMX * FMY][];
         compatible = new int[wave.Length][][];
         for (int i = 0; i < wave.Length; i++)
         {
+            //T => number of possible inputs
             wave[i] = new bool[T];
             compatible[i] = new int[T][];
+            //4 => maximum number of possible orientations
             for (int t = 0; t < T; t++) compatible[i][t] = new int[4];
         }
 
+        //Tile specific entropy values
         weightLogWeights = new double[T];
         sumOfWeights = 0;
         sumOfWeightLogWeights = 0;
@@ -60,6 +65,7 @@ abstract class Model
 
         startingEntropy = Math.Log(sumOfWeights) - sumOfWeightLogWeights / sumOfWeights;
 
+        
         sumsOfOnes = new int[FMX * FMY];
         sumsOfWeights = new double[FMX * FMY];
         sumsOfWeightLogWeights = new double[FMX * FMY];

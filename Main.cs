@@ -43,7 +43,11 @@ static class Program
                     {
                         Console.WriteLine("DONE");
 
-                        model.Graphics().Save($"{counter} {name} {i}.png");
+                        string nameOfFile = $"{ counter } { name} {i}.png";
+
+                        Console.WriteLine(nameOfFile);
+
+                        model.Graphics().Save(@"C:\Users\Deku\source\repos\WFC2\output\"+nameOfFile);
                         if (model is SimpleTiledModel && xelem.Get("textOutput", false))
                             System.IO.File.WriteAllText($"{counter} {name} {i}.txt", (model as SimpleTiledModel).TextOutput());
 
